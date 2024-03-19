@@ -177,6 +177,8 @@ const (
 	AuthNone
 	// AuthAuto (default) use the first AuthType of the list of returned types supported by SMTP
 	AuthAuto
+	// AuthLogin implements the OAUTH2 authentication
+	AuthOauth2
 )
 
 func (at AuthType) String() string {
@@ -187,6 +189,8 @@ func (at AuthType) String() string {
 		return "LOGIN"
 	case AuthCRAMMD5:
 		return "CRAM-MD5"
+	case AuthOauth2:
+		return "XOAUTH2"
 	default:
 		return ""
 	}
@@ -879,6 +883,10 @@ func (server *SMTPServer) getAuth(a string) (auth, error) {
 	case strings.Contains(a, AuthCRAMMD5.String()):
 		if server.Username != "" || server.Password != "" {
 			afn = cramMD5Authfn(server.Username, server.Password)
+		}
+	case strings.Contains(a, AuthOauth2.String()):
+		if server.Username != "" || server.Password != "" {
+			afn = oauth2fn(server.Username, server.Password)
 		}
 	default:
 		return nil, fmt.Errorf("Mail Error on determining auth type, %s is not supported", a)
